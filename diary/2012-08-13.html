@@ -1,0 +1,262 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html>
+<head>
+    <link rel="Stylesheet" type="text/css" href="../style.css" />
+    <title>破解金山WPS表格密码</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="../shBrush/scripts/shCore.js" type="text/javascript"></script>
+    <script src="../shBrush/scripts/shAutoloader.js" type="text/javascript"></script>
+    <link href="../shBrush/styles/shCore.css" rel="stylesheet" type="text/css" />
+    <link href="../shBrush/styles/shThemeDefault.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div align="center" 
+            style="z-index:100; width:100%; top:5px; position:fixed;">
+        <code style="background-color:#e0e0e0">
+            <strong>
+            <a href="../index.html">回主页</a>
+            <a href="../diary/diary.html">我的日志</a>
+            </strong>
+        </code>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+    <div class="content">
+    
+
+
+<h2 id="toc_0.1">破解金山WPS表格密码</h2>
+
+<p>
+金山WPS的COM接口方法同微软的基本相同，常用的接口定义完全一样。
+不过在打开密码文档的时候金山的WPS如果密码错了会提示一个弹出框阻止程序继续运行，
+对暴力破解有一点点麻烦。基本的脚本如下:
+</p>
+
+<pre class="brush: javascript">
+exl = new ActiveXObject("Excel.Application");
+exl = new ActiveXObject("ET.Application");
+
+// 如果密码正确下面这行不操作，否则抛出异常
+exl.Workbooks.Open("&lt;filepath&gt;",0,true,1,"&lt;pwd&gt;");
+exl.Quit();
+</pre>
+
+<p>
+最后的版本为:
+</p>
+<pre class="brush: javascript">
+// main.js
+//定义可能的字符
+var allc = "";
+allc += "0123456789";
+//allc += "abcdefghijklmnopqrstuvwxyz";
+//allc += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//allc += "!@#$%^&amp;*()_+/?&lt;&gt;,.'\":;";
+
+//定义密码的最大最小长度
+var minl = 3;
+var maxl = 3;
+
+var iswps = false; //不是的话设置为 true
+
+/// !!!警告!!! 除非你非常明白在做什么，否则不要修改下面的内容
+
+
+
+////////////////////////////////////////////////////////
+// 参数检查
+var objArgs = WScript.Arguments;
+if (objArgs.length &lt; 1)
+    exit("没有文件!");
+
+objArgs = objArgs(0);
+if(!isfile(objArgs))
+    exit("文件不存在!");
+
+////////////////////////////////////////////////////////
+//破解部分
+var cl = allc.length;
+
+var carr = null;
+++maxl;
+for(var i=minl;i&lt;maxl;++i){
+    carr = initcarr(i);
+    if(carr==null)
+        exit("内存溢出");
+    WScript.Echo("尝试 " + i + " 位长度密码！");
+    var pwd;
+    while((pwd=addcarr(carr,cl))!=null){
+        //WScript.Echo(pwd);
+        try{
+            var etobj = trytodec(objArgs,pwd);
+            if(etobj==null)
+                continue;
+            objArgs = objArgs.replace(/(\.[a-z]+)$/,"_已破解$1");
+            saveto(etobj,objArgs);
+            getETObject("deleteobj");
+            WScript.Echo("破解成功，密码为: " + pwd +"\n"
+                    + "破解后的文件为: \"" + objArgs + "\"");
+            WScript.Quit(0);
+        }catch(e){
+            exit(e);
+        }
+    }
+}
+
+WScript.Quit();
+
+////////////////////////////////////////////////////////
+function getETObject(){
+    if(getETObject.etobj!=null &amp;&amp; arguments.length==1 &amp;&amp; typeof(arguments[0])=="string"
+           &amp;&amp; arguments[0] == "deleteobj"){
+        getETObject.etobj.Quit();
+        getETObject.etobj=null;
+        return null;
+    }
+
+    if(getETObject.etobj == null){
+        if(arguments.length == 0){
+            try{
+                getETObject.etobj = new ActiveXObject("Excel.Application");
+                return getETObject.etobj;
+            }catch(e){ }
+        }
+        try{
+            getETObject.etobj = new ActiveXObject("ET.Application");
+        }catch(e){ }
+    }
+    return getETObject.etobj;
+}
+
+function trytodec(fp,pwd){
+    var etobj;
+    if(iswps)
+        etobj = getETObject(iswps);
+    else
+        etobj = getETObject();
+    if(etobj==null)
+        throw "找不到 Excel 或 WPS ！";
+    try{
+        etobj = etobj.Workbooks.Open(fp,0,true,1,pwd);
+    }catch(e){
+        return null;
+    }
+    return etobj;
+}
+
+function saveto(etobj,nfp){
+    try{
+        etobj.SaveAs(nfp,18,"");
+    }catch(e){
+        WScript.Echo(e.message);
+        return false;
+    }
+    return true;
+}
+
+////////////////////////////////////////////////////////
+function exit(ec){
+    WScript.Echo(ec);
+    WScript.Quit(1);
+}
+
+function isfile(fp){
+    var fso;
+    try{
+        fso = new ActiveXObject("Scripting.FileSystemObject");
+    }catch(e){
+        return false;
+    }
+    return fso.FileExists(fp);
+}
+
+function initcarr(len){
+    var carr = new Array(len);
+    for(var i=0;i&lt;len;++i)
+        carr[i] = 0;
+    return carr;
+}
+
+function addcarr(ca,mn){
+    var cl = ca.length;
+
+    var i;
+    do{
+        i = false;
+        --cl
+        ++ca[cl];
+        if(ca[cl]==mn){
+            if(cl==0) //最大
+                return null;
+            ca[cl] = 0;
+            i = true;
+        }
+    }while(i);
+
+    cl = "";
+    for(i=0;i&lt;ca.length;++i)
+        cl += allc.charAt(ca[i]);
+
+    return cl;
+}
+</pre>
+
+
+<p>
+因为WPS需要点掉对话框，所以写了一个专门发送<code>ESC</code>字符的脚本:
+</p>
+<pre class="brush: javascript">
+//设置要发送多少时间的ESC
+var sendtime = 20; //单位为秒
+
+/////////////////////////////////////
+var dt = new Date();
+var last = dt.getTime();
+last += 1000 * sendtime; //多少秒
+
+var wss = new ActiveXObject("WScript.Shell");
+while(new Date().getTime()&lt;last)
+    for(var i=0;i&lt;1000;++i)
+        wss.SendKeys("{ESC}");
+</pre>
+
+    </div>
+    
+<script type="text/javascript">
+function path()
+{
+  var args = arguments,
+      result = []
+      ;
+       
+  for(var i = 0; i < args.length; i++)
+      result.push(args[i].replace('@', '../shBrush/scripts/'));
+       
+  return result
+};
+SyntaxHighlighter.autoloader.apply(null, path(
+  'applescript            @shBrushAppleScript.js',
+  'actionscript3 as3      @shBrushAS3.js',
+  'bash shell             @shBrushBash.js',
+  'cpp c                  @shBrushCpp.js',
+  'c# c-sharp csharp      @shBrushCSharp.js',
+  'css                    @shBrushCss.js',
+  'delphi pascal          @shBrushDelphi.js',
+  'diff patch pas         @shBrushDiff.js',
+  'java                   @shBrushJava.js',
+  'js jscript javascript  @shBrushJScript.js',
+  'perl pl                @shBrushPerl.js',
+  'php                    @shBrushPhp.js',
+  'text plain             @shBrushPlain.js',
+  'py python              @shBrushPython.js',
+  'ruby rails ror rb      @shBrushRuby.js',
+  'sql                    @shBrushSql.js',
+  'vb vbnet               @shBrushVb.js',
+  'vim vi                 @shBrushVim.js',
+  'xml xhtml xslt html    @shBrushXml.js'
+));
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
