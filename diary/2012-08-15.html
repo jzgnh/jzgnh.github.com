@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html>
+<head>
+    <link rel="Stylesheet" type="text/css" href="../style.css" />
+    <title>交换 Esc 和 CAPS Lock 按键</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="../shBrush/scripts/shCore.js" type="text/javascript"></script>
+    <script src="../shBrush/scripts/shAutoloader.js" type="text/javascript"></script>
+    <link href="../shBrush/styles/shCore.css" rel="stylesheet" type="text/css" />
+    <link href="../shBrush/styles/shThemeDefault.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div align="center" 
+            style="z-index:100; width:100%; top:5px; position:fixed;">
+        <code style="background-color:#e0e0e0">
+            <strong>
+            <a href="../index.html">回主页</a>
+            <a href="../diary/diary.html">我的日志</a>
+            </strong>
+        </code>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+    <div class="content">
+    
+
+
+<h2 id="toc_0.1">更换Windows下的按键</h2>
+<hr />
+
+<p>
+为了使用Vim方便，更换了Windows下的 Esc 和 CAPS Lock 按键，还在适应不是很习惯！
+</p>
+
+<p>
+<em>方法来自于</em><a href="http://xyztony1985.blog.163.com/blog/static/3611782011752420104/">交换Win7的Esc和Caps Lock键</a>
+</p>
+
+<p>
+创建一个Windows注册表文件:
+</p>
+
+<pre>
+    Windows Registry Editor Version 5.00
+
+    [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout]
+    "Scancode Map"=hex:00,00,00,00,00,00,00,00,03,00,00,00,3a,00,01,00,01,00,3a,00,00,00,00,00
+</pre>
+
+<h3 id="toc_0.1.1">重点解读</h3>
+<p>
+重点分析上面代码中的那一长串二进制，为方便分析，拆分为每8位一行，并加上行号，结果如下：
+</p>
+<pre>
+    1. 00,00,00,00,
+    2. 00,00,00,00,
+    3. 03,00,00,00,
+    4. 3a,00,01,00,
+    5. 01,00,3a,00,
+    6. 00,00,00,00
+</pre>
+
+<p>
+头两行和最后一行，是固定的，都是8个0。
+</p>
+
+<p>
+第3行，表示共更改了多少个按键，本例为3个，怎么算的？从第4行开始，到最末尾行（虽然严格来说末行不算），每行算1个，4、5、6行，刚好3个。
+</p>
+
+<p>
+第4行，前后各4位，分别代表某个按键。本例为将3a00的按键映射为0100。3a00代表CapsLock键，0100代表Esc键。
+</p>
+
+<p>
+第5行，同理，0100的按键映射为3a00，即Esc映射为CapsLock。
+</p>
+
+<p>
+第6行，已经讲了，末行，固定8个0。如果需要增加更多的映射，可以在此行之上，不断加类似4、5行格式的。当然，最后的结果，还是要将各行合为一行的。
+</p>
+
+<h3 id="toc_0.1.2">其他按键对照</h3>
+
+<pre>
+    Escape          01 00
+    Tab             0F 00
+    Caps Lock       3A 00
+    Left Alt        38 00
+    Left Ctrl       1D 00
+    Left Shift      2A 00
+    Left Windows    5B E0
+    Right Alt       38 E0
+    Right Ctrl      1D E0
+    Right Shift     36 00
+    Right Windows   5C E0
+    Backspace       0E 00
+    Delete          53 E0
+    Enter           1C 00
+    Space           39 00
+    Insert          52 E0
+    HOME            47 E0
+    End             4F E0
+    Num Lock        45 00
+    Page Down       51 E0
+    Page Up         49 E0
+    Scroll Lock     46 00
+</pre>
+
+<p>
+还有一个特殊的值——00 00，表示啥也不干，如果要将某个按键禁用，只需映射为00 00。
+</p>
+
+<p>
+特别说明，本人仅测试过CapsLock与Esc按键，其他均未测试，如有不正确的地方，还望告知。
+</p>
+
+
+<h2 id="toc_0.2">更换Linux下的按键</h2>
+
+<p>
+<em>尚未实验，不过网上资料很多</em>
+</p>
+
+    </div>
+    
+<script type="text/javascript">
+function path()
+{
+  var args = arguments,
+      result = []
+      ;
+       
+  for(var i = 0; i < args.length; i++)
+      result.push(args[i].replace('@', '../shBrush/scripts/'));
+       
+  return result
+};
+SyntaxHighlighter.autoloader.apply(null, path(
+  'applescript            @shBrushAppleScript.js',
+  'actionscript3 as3      @shBrushAS3.js',
+  'bash shell             @shBrushBash.js',
+  'cpp c                  @shBrushCpp.js',
+  'c# c-sharp csharp      @shBrushCSharp.js',
+  'css                    @shBrushCss.js',
+  'delphi pascal          @shBrushDelphi.js',
+  'diff patch pas         @shBrushDiff.js',
+  'java                   @shBrushJava.js',
+  'js jscript javascript  @shBrushJScript.js',
+  'perl pl                @shBrushPerl.js',
+  'php                    @shBrushPhp.js',
+  'text plain             @shBrushPlain.js',
+  'py python              @shBrushPython.js',
+  'ruby rails ror rb      @shBrushRuby.js',
+  'sql                    @shBrushSql.js',
+  'vb vbnet               @shBrushVb.js',
+  'vim vi                 @shBrushVim.js',
+  'xml xhtml xslt html    @shBrushXml.js'
+));
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
