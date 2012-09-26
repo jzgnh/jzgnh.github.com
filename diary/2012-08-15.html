@@ -4,10 +4,11 @@
     <link rel="Stylesheet" type="text/css" href="../style.css" />
     <title>交换 Esc 和 CAPS Lock 按键</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script src="../shBrush/scripts/shCore.js" type="text/javascript"></script>
-    <script src="../shBrush/scripts/shAutoloader.js" type="text/javascript"></script>
-    <link href="../shBrush/styles/shCore.css" rel="stylesheet" type="text/css" />
-    <link href="../shBrush/styles/shThemeDefault.css" rel="stylesheet" type="text/css" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <script src="../scripts/shCore.js" type="text/javascript"></script>
+    <script src="../scripts/shAutoloader.js" type="text/javascript"></script>
+    <link href="../stylesheets/shCore.css" rel="stylesheet" type="text/css" />
+    <link href="../stylesheets/shThemeDefault.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
     <div align="center" 
@@ -25,7 +26,9 @@
     
 
 
-<h2 id="toc_0.1">更换Windows下的按键</h2>
+<h1 id="toc_1">交换 Esc 和 CAPS Lock 按键</h1>
+
+<h2 id="toc_1.1">更换Windows下的按键</h2>
 <hr />
 
 <p>
@@ -47,7 +50,7 @@
     "Scancode Map"=hex:00,00,00,00,00,00,00,00,03,00,00,00,3a,00,01,00,01,00,3a,00,00,00,00,00
 </pre>
 
-<h3 id="toc_0.1.1">重点解读</h3>
+<h3 id="toc_1.1.1">重点解读</h3>
 <p>
 重点分析上面代码中的那一长串二进制，为方便分析，拆分为每8位一行，并加上行号，结果如下：
 </p>
@@ -80,7 +83,7 @@
 第6行，已经讲了，末行，固定8个0。如果需要增加更多的映射，可以在此行之上，不断加类似4、5行格式的。当然，最后的结果，还是要将各行合为一行的。
 </p>
 
-<h3 id="toc_0.1.2">其他按键对照</h3>
+<h3 id="toc_1.1.2">其他按键对照</h3>
 
 <pre>
     Escape          01 00
@@ -116,7 +119,8 @@
 </p>
 
 
-<h2 id="toc_0.2">更换Linux下的按键</h2>
+<h2 id="toc_1.2">更换Linux下的按键</h2>
+<hr />
 
 <p>
 <em>尚未实验，不过网上资料很多</em>
@@ -132,7 +136,7 @@ function path()
       ;
        
   for(var i = 0; i < args.length; i++)
-      result.push(args[i].replace('@', '../shBrush/scripts/'));
+      result.push(args[i].replace('@', '../scripts/'));
        
   return result
 };

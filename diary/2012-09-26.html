@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html>
+<head>
+    <link rel="Stylesheet" type="text/css" href="../style.css" />
+    <title>配置MSYS环境</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <script src="../scripts/shCore.js" type="text/javascript"></script>
+    <script src="../scripts/shAutoloader.js" type="text/javascript"></script>
+    <link href="../stylesheets/shCore.css" rel="stylesheet" type="text/css" />
+    <link href="../stylesheets/shThemeDefault.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div align="center" 
+            style="z-index:100; width:100%; top:5px; position:fixed;">
+        <code style="background-color:#e0e0e0">
+            <strong>
+            <a href="../index.html">回主页</a>
+            <a href="../diary/diary.html">我的日志</a>
+            </strong>
+        </code>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+    <div class="content">
+    
+
+
+
+<h1 id="toc_1">配置MSYS环境</h1>
+
+<p>
+主要是为了学习 <code>autotools</code>
+</p>
+
+<p>
+首先下载<code>mingw</code>和<code>MSYS</code>的在线安装包，选中需要的内容，全部下载即可
+</p>
+
+
+<h2 id="toc_1.1">MSYS配置</h2>
+<hr />
+
+<p>
+安装好了以后在<code>MinGW</code>目录下有一个<code>msys</code>文件夹，里面就是msys的基础系统。
+如果是从别处复制过来的需要执行  <code>postinstall/pi.bat</code> ,此设定了<code>MinGW</code>的安装位置！
+</p>
+
+<p>
+只要在安装时选择了完整的开发环境 <code>autotools</code> 就安装好了！
+</p>
+<blockquote>
+<code>lua</code>可以直接使用<code>mingw-get</code>获取安装，如果需要请自行安装!
+</blockquote>
+
+<h3 id="toc_1.1.1">中文支持</h3>
+<hr />
+
+<p>
+此时的<code>MSYS</code>还不能支持中文，首先在<code>/etc/profile</code>文件中设置:
+</p>
+
+<pre class="brush: bash">
+alias ls='/bin/ls --show-control-chars --color=tty'
+
+# 下面修改是为了方便从任何目录切换到 msys 环境
+if [ -z "$CURCMDPATH" ]; then
+  cd "$HOME"
+else
+  cd "$CURCMDPATH"
+  unset CURCMDPATH
+fi
+</pre>
+
+<p>
+此时中文显示ok，但是还不能输入，需要修改 <code>inputrc</code>， 需要修改的文件为 <code>/etc/inputrc.default</code> 和 <code>~/.inputrc</code>:
+</p>
+<pre class="brush: vim">
+#找到这部分修改成如下设置
+# disable/enable 8bit input
+set meta-flag on
+set input-meta on
+set output-meta on
+set convert-meta off
+</pre>
+
+<h3 id="toc_1.1.2">安装<code>man</code></h3>
+<hr />
+
+<p>
+<code>man</code>是必须的，但是<code>MSYS</code>不提供，只好自己来了！可以参考 <a href="http://www.mingw.org/wiki/ManScript">ManScript</a>!
+</p>
+
+
+<p>
+首先将<code>msys</code>的<code>/usr/share</code>目录同<code>MinGW/share</code>合并，否则在安装<code>groff</code>或其他包时有可能失败，
+这些包需要检测<code>automake</code>等！ 
+</p>
+<blockquote>
+对于<code>Vista</code>以上的系统可以使用<code>mklink</code>命令创建目录的符号连接!<br/>
+如果编译中实在出错就把<code>MinGW</code>目录同<code>MSYS</code>目录合并也应该没问题的!
+</blockquote>
+
+
+<p>
+当然必须安装的还有<code>groff</code>，这个可以从<code>MinGW</code>项目中去下载，可以源代码也可以是安装包！
+（建议用源代码，正好熟悉一下常用的安装过程，顺便测试一下看<code>shell</code>是不是正确执行！）
+</p>
+<blockquote>
+具体的安装过程见<code>groff</code>自带的<code>README</code>。
+</blockquote>
+
+<p>
+然后到<code>MinGW/msys/1.0/bin</code>下创建<code>man</code>脚本，参照 <a href="http://www.mingw.org/wiki/ManScript">ManScript</a>
+编写<code>man</code>脚本和<code>man.conf</code>跟安装不一致的地方自行修改！
+</p>
+
+
+<p>
+完了可以从<a href="http://kernel.org/doc/man-pages/">linux man</a>处下载最新的man手册！
+</p>
+<blockquote>
+此处的手册包含了<code>2 3 4 5 7</code>不完全，我主要是使用此处的 <code>3. Library functions</code>。<br/>
+对于常用的<code>linux</code>命令，可以从<code>linux</code>系统上复制<code>man1</code>文件夹到对应的<code>/usr/share/man</code>（如果是<code>gz</code>格式的需要解压）。
+</blockquote>
+
+<h3 id="toc_1.1.3">在<code>windows</code>命令行中使用<code>MSYS</code>和<code>man</code></h3>
+<hr />
+
+<p>
+安装了<code>groff</code>以后在<code>windows</code>命令行中使用<code>man</code>也是很方便的！
+编写一个<code>bat</code>文件即可!（可以从最后的附件中找到！）将该文件放到系统路径中就可以执行！
+</p>
+<blockquote>
+如果你直接从<a href="http://www.mingw.org/wiki/ManScript">ManScript</a>复制了其中的脚本，
+则只能默认查找<code>man1</code>,且有可能在运行时
+提示<code>WARNING: terminal is not fully functional</code>,需要设置<code>set TERM=msys</code>!(参考附件)
+</blockquote>
+
+<p>
+同样在命令行中可以执行<code>sh</code>切换到<code>MSYS</code>，或者执行<code>sh -c "some command"</code>，将会很<code>cool</code>! 
+那样你可以写<code>Makefile</code>时用<code>shell</code>，执行<code>sh -c make</code>执行！可以同<code>Eclipse</code>等工具集成！
+</p>
+
+<p>
+同样在附件中也提供了一个<code>sh.cmd</code>(就是一个<code>bat</code>文件)，可以完成这个工作！
+</p>
+<blockquote>
+<code>sh.cm</code>中设置了<code>CURCMDPATH</code>变量，同最开始修改<code>/etc/profile</code>里的内容对应起来了！
+</blockquote>
+
+<h3 id="toc_1.1.4">与其他工具的集成</h3>
+<hr />
+
+<p>
+因为在项目中使用了<code>git</code>而且我也已经安装了<code>msysgit</code>，这里就直接调用现有的<code>git.exe</code>。
+</p>
+<blockquote>
+很简单，写一个<code>shell</code>脚本即可！<br/>
+可以将<code>msysgit</code>的<code>/etc/git-completion.bash</code>复制到<code>MSYS</code>的对应目录下，
+在<code>/etc/profile</code>文件中加入<code>. /etc/git-completion.bash</code>，这样就可以使用<code>git</code>的自动完成了！ 
+</blockquote>
+
+<h2 id="toc_1.2">附件</h2>
+<hr />
+
+<p>
+<a href="../files/changed.zip">修改的文件</a>
+</p>
+
+    </div>
+    
+<script type="text/javascript">
+function path()
+{
+  var args = arguments,
+      result = []
+      ;
+       
+  for(var i = 0; i < args.length; i++)
+      result.push(args[i].replace('@', '../scripts/'));
+       
+  return result
+};
+SyntaxHighlighter.autoloader.apply(null, path(
+  'applescript            @shBrushAppleScript.js',
+  'actionscript3 as3      @shBrushAS3.js',
+  'bash shell             @shBrushBash.js',
+  'cpp c                  @shBrushCpp.js',
+  'c# c-sharp csharp      @shBrushCSharp.js',
+  'css                    @shBrushCss.js',
+  'delphi pascal          @shBrushDelphi.js',
+  'diff patch pas         @shBrushDiff.js',
+  'java                   @shBrushJava.js',
+  'js jscript javascript  @shBrushJScript.js',
+  'perl pl                @shBrushPerl.js',
+  'php                    @shBrushPhp.js',
+  'text plain             @shBrushPlain.js',
+  'py python              @shBrushPython.js',
+  'ruby rails ror rb      @shBrushRuby.js',
+  'sql                    @shBrushSql.js',
+  'vb vbnet               @shBrushVb.js',
+  'vim vi                 @shBrushVim.js',
+  'xml xhtml xslt html    @shBrushXml.js'
+));
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
