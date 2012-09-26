@@ -1,0 +1,79 @@
+
+%title 交换 Esc 和 CAPS Lock 按键
+
+= 交换 Esc 和 CAPS Lock 按键 =
+
+== 更换Windows下的按键 ==
+----
+
+为了使用Vim方便，更换了Windows下的 Esc 和 CAPS Lock 按键，还在适应不是很习惯！
+
+_方法来自于_[[http://xyztony1985.blog.163.com/blog/static/3611782011752420104/|交换Win7的Esc和Caps Lock键]]
+
+创建一个Windows注册表文件:
+
+{{{
+    Windows Registry Editor Version 5.00
+
+    [HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout]
+    "Scancode Map"=hex:00,00,00,00,00,00,00,00,03,00,00,00,3a,00,01,00,01,00,3a,00,00,00,00,00
+}}}
+
+=== 重点解读 ===
+重点分析上面代码中的那一长串二进制，为方便分析，拆分为每8位一行，并加上行号，结果如下：
+{{{
+    1. 00,00,00,00,
+    2. 00,00,00,00,
+    3. 03,00,00,00,
+    4. 3a,00,01,00,
+    5. 01,00,3a,00,
+    6. 00,00,00,00
+}}}
+
+头两行和最后一行，是固定的，都是8个0。
+
+第3行，表示共更改了多少个按键，本例为3个，怎么算的？从第4行开始，到最末尾行（虽然严格来说末行不算），每行算1个，4、5、6行，刚好3个。
+
+第4行，前后各4位，分别代表某个按键。本例为将3a00的按键映射为0100。3a00代表CapsLock键，0100代表Esc键。
+
+第5行，同理，0100的按键映射为3a00，即Esc映射为CapsLock。
+
+第6行，已经讲了，末行，固定8个0。如果需要增加更多的映射，可以在此行之上，不断加类似4、5行格式的。当然，最后的结果，还是要将各行合为一行的。
+
+=== 其他按键对照 ===
+
+{{{
+    Escape          01 00
+    Tab             0F 00
+    Caps Lock       3A 00
+    Left Alt        38 00
+    Left Ctrl       1D 00
+    Left Shift      2A 00
+    Left Windows    5B E0
+    Right Alt       38 E0
+    Right Ctrl      1D E0
+    Right Shift     36 00
+    Right Windows   5C E0
+    Backspace       0E 00
+    Delete          53 E0
+    Enter           1C 00
+    Space           39 00
+    Insert          52 E0
+    HOME            47 E0
+    End             4F E0
+    Num Lock        45 00
+    Page Down       51 E0
+    Page Up         49 E0
+    Scroll Lock     46 00
+}}}
+
+还有一个特殊的值——00 00，表示啥也不干，如果要将某个按键禁用，只需映射为00 00。
+
+特别说明，本人仅测试过CapsLock与Esc按键，其他均未测试，如有不正确的地方，还望告知。
+
+
+== 更换Linux下的按键 ==
+----
+
+_尚未实验，不过网上资料很多_
+

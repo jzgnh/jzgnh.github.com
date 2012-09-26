@@ -1,0 +1,53 @@
+
+%title VimWiki 配置
+         == VimWiki 的使用 ==
+----
+%toc 目录
+
+=== 说明 ===
+----
+    Vim的基本配置请参见:[[../VimStart|Vim起步]]
+
+=== 安装VimWiki ===
+----
+
+首先要下载 [[http://www.vim.org/scripts/script.php?script_id=2226|VimWiki]]。
+当前版本为`2.0.1`。
+    文档网上有个[[http://code.google.com/p/vim-script-cn/source/browse/trunk/doc/vimwiki.cnx|中文版]]帮助文档，虽然版本是`1.1.1`的，但是也可以用。
+
+下载的文件是 `vimwiki-N-N-N.vba.gz` （N表示版本数字）。
+    *注意* ：在Windows上需要先解压成 `vimwiki-N-N-N.vba`。*nix上可以直接打开。
+
+然后用 vim 打开 `vimwiki-N-N-N.vba.gz`，（Windows上为`vimwiki-N-N-N.vba`）。
+
+执行如下命令:
+{{{class="brush: vim"
+vim vimwiki-N-N-N.vba
+:so %
+" 下面两个命令根据系统不同执行某一条
+:helptags ~/.vim/doc        " *nix 下更新帮助 tags
+:helptags $VIM\vimfiles\doc " Windows 下更新帮助 tags
+" 这样就可以使用 :help vimwiki 命令来查看帮助
+}}}
+
+简单的配置后就可以开始写WIKI了，我的配置如下:
+{{{class="brush: vim"
+" 在 vimrc 中加入下面设置
+let g:vimwiki_list = [{'path' : 'D:/vimwiki/my_wiki/', 'path_html' : 'D:/vimwiki/cdgs_html/', 'auto_export' : 1, 'nested_syntaxes' : { 'vim' : 'vim' } }]
+let g:vimwiki_use_mouse = 1
+" let g:vimwiki_w32_dir_enc = cp936
+let g:vimwiki_dir_link = 'index'
+let g:vimwiki_html_header_numbering = 0
+" let g:vimwiki_file_exts = 'pdf,txt,doc,rtf,xls,php,zip,rar,7z,html,gz'
+" let g:vimwiki_valid_html_tags = 'b,i,s,u,sub,sup,kbd,br,hr'
+}}}
+
+*注意* ： `path_html` 的值应该名字以 `_html/` 结尾，否则可能生成HTML生成不正确。
+
+具体的配置请参考 `vimwiki` 的帮助。
+
+接下来根据 `vimwiki` 的帮助文档开始写Wiki了，最基本的操作就是用 `\ww` 开始。
+
+当然可以有更多的配置，可以做一下模板文件等。
+
+对于写日志来说还可以跟 [[http://www.vim.org/scripts/script.php?script_id=52|Calendar]]集成更强大。

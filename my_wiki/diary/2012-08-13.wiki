@@ -1,0 +1,194 @@
+
+%title 破解金山WPS表格密码
+
+== 破解金山WPS表格密码 ==
+
+金山WPS的COM接口方法同微软的基本相同，常用的接口定义完全一样。
+不过在打开密码文档的时候金山的WPS如果密码错了会提示一个弹出框阻止程序继续运行，
+对暴力破解有一点点麻烦。基本的脚本如下:
+
+{{{class="brush: javascript"
+exl = new ActiveXObject("Excel.Application");
+exl = new ActiveXObject("ET.Application");
+
+// 如果密码正确下面这行不操作，否则抛出异常
+exl.Workbooks.Open("<filepath>",0,true,1,"<pwd>");
+exl.Quit();
+}}}
+
+最后的版本为:
+{{{class="brush: javascript"
+// main.js
+//定义可能的字符
+var allc = "";
+allc += "0123456789";
+//allc += "abcdefghijklmnopqrstuvwxyz";
+//allc += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//allc += "!@#$%^&*()_+/?<>,.'\":;";
+
+//定义密码的最大最小长度
+var minl = 3;
+var maxl = 3;
+
+var iswps = false; //不是的话设置为 true
+
+/// !!!警告!!! 除非你非常明白在做什么，否则不要修改下面的内容
+
+
+
+////////////////////////////////////////////////////////
+// 参数检查
+var objArgs = WScript.Arguments;
+if (objArgs.length < 1)
+    exit("没有文件!");
+
+objArgs = objArgs(0);
+if(!isfile(objArgs))
+    exit("文件不存在!");
+
+////////////////////////////////////////////////////////
+//破解部分
+var cl = allc.length;
+
+var carr = null;
+++maxl;
+for(var i=minl;i<maxl;++i){
+    carr = initcarr(i);
+    if(carr==null)
+        exit("内存溢出");
+    WScript.Echo("尝试 " + i + " 位长度密码！");
+    var pwd;
+    while((pwd=addcarr(carr,cl))!=null){
+        //WScript.Echo(pwd);
+        try{
+            var etobj = trytodec(objArgs,pwd);
+            if(etobj==null)
+                continue;
+            objArgs = objArgs.replace(/(\.[a-z]+)$/,"_已破解$1");
+            saveto(etobj,objArgs);
+            getETObject("deleteobj");
+            WScript.Echo("破解成功，密码为: " + pwd +"\n"
+                    + "破解后的文件为: \"" + objArgs + "\"");
+            WScript.Quit(0);
+        }catch(e){
+            exit(e);
+        }
+    }
+}
+
+WScript.Quit();
+
+////////////////////////////////////////////////////////
+function getETObject(){
+    if(getETObject.etobj!=null && arguments.length==1 && typeof(arguments[0])=="string"
+           && arguments[0] == "deleteobj"){
+        getETObject.etobj.Quit();
+        getETObject.etobj=null;
+        return null;
+    }
+
+    if(getETObject.etobj == null){
+        if(arguments.length == 0){
+            try{
+                getETObject.etobj = new ActiveXObject("Excel.Application");
+                return getETObject.etobj;
+            }catch(e){ }
+        }
+        try{
+            getETObject.etobj = new ActiveXObject("ET.Application");
+        }catch(e){ }
+    }
+    return getETObject.etobj;
+}
+
+function trytodec(fp,pwd){
+    var etobj;
+    if(iswps)
+        etobj = getETObject(iswps);
+    else
+        etobj = getETObject();
+    if(etobj==null)
+        throw "找不到 Excel 或 WPS ！";
+    try{
+        etobj = etobj.Workbooks.Open(fp,0,true,1,pwd);
+    }catch(e){
+        return null;
+    }
+    return etobj;
+}
+
+function saveto(etobj,nfp){
+    try{
+        etobj.SaveAs(nfp,18,"");
+    }catch(e){
+        WScript.Echo(e.message);
+        return false;
+    }
+    return true;
+}
+
+////////////////////////////////////////////////////////
+function exit(ec){
+    WScript.Echo(ec);
+    WScript.Quit(1);
+}
+
+function isfile(fp){
+    var fso;
+    try{
+        fso = new ActiveXObject("Scripting.FileSystemObject");
+    }catch(e){
+        return false;
+    }
+    return fso.FileExists(fp);
+}
+
+function initcarr(len){
+    var carr = new Array(len);
+    for(var i=0;i<len;++i)
+        carr[i] = 0;
+    return carr;
+}
+
+function addcarr(ca,mn){
+    var cl = ca.length;
+
+    var i;
+    do{
+        i = false;
+        --cl
+        ++ca[cl];
+        if(ca[cl]==mn){
+            if(cl==0) //最大
+                return null;
+            ca[cl] = 0;
+            i = true;
+        }
+    }while(i);
+
+    cl = "";
+    for(i=0;i<ca.length;++i)
+        cl += allc.charAt(ca[i]);
+
+    return cl;
+}
+}}}
+
+
+因为WPS需要点掉对话框，所以写了一个专门发送`ESC`字符的脚本:
+{{{class="brush: javascript"
+//设置要发送多少时间的ESC
+var sendtime = 20; //单位为秒
+
+/////////////////////////////////////
+var dt = new Date();
+var last = dt.getTime();
+last += 1000 * sendtime; //多少秒
+
+var wss = new ActiveXObject("WScript.Shell");
+while(new Date().getTime()<last)
+    for(var i=0;i<1000;++i)
+        wss.SendKeys("{ESC}");
+}}}
+
+

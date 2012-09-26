@@ -1,0 +1,7 @@
+
+    == 今天安装完成VimWiki ==
+
+今天把vim的runtime解压到指定的目录中就可以重新设定 $VIM 了！
+
+安装方式见 [[../VimWiki/|VimWikiVim环境]]。
+

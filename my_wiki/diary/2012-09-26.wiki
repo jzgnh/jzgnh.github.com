@@ -1,0 +1,105 @@
+
+%title 配置MSYS环境
+
+
+= 配置MSYS环境 =
+
+主要是为了学习 `autotools`
+
+首先下载`mingw`和`MSYS`的在线安装包，选中需要的内容，全部下载即可
+
+
+== MSYS配置 ==
+----
+
+安装好了以后在`MinGW`目录下有一个`msys`文件夹，里面就是msys的基础系统。
+如果是从别处复制过来的需要执行  `postinstall/pi.bat` ,此设定了`MinGW`的安装位置！
+
+只要在安装时选择了完整的开发环境 `autotools` 就安装好了！
+
+    `lua`可以直接使用`mingw-get`获取安装，如果需要请自行安装!
+
+=== 中文支持 ===
+----
+
+此时的`MSYS`还不能支持中文，首先在`/etc/profile`文件中设置:
+
+{{{class="brush: bash"
+alias ls='/bin/ls --show-control-chars --color=tty'
+
+# 下面修改是为了方便从任何目录切换到 msys 环境
+if [ -z "$CURCMDPATH" ]; then
+  cd "$HOME"
+else
+  cd "$CURCMDPATH"
+  unset CURCMDPATH
+fi
+}}}
+
+此时中文显示ok，但是还不能输入，需要修改 `inputrc`， 需要修改的文件为 `/etc/inputrc.default` 和 `~/.inputrc`:
+{{{class="brush: vim"
+#找到这部分修改成如下设置
+# disable/enable 8bit input
+set meta-flag on
+set input-meta on
+set output-meta on
+set convert-meta off
+}}}
+
+=== 安装`man` ===
+----
+
+`man`是必须的，但是`MSYS`不提供，只好自己来了！可以参考 [[http://www.mingw.org/wiki/ManScript|ManScript]]!
+
+
+首先将`msys`的`/usr/share`目录同`MinGW/share`合并，否则在安装`groff`或其他包时有可能失败，
+这些包需要检测`automake`等！ 
+    对于`Vista`以上的系统可以使用`mklink`命令创建目录的符号连接!<br/>
+    如果编译中实在出错就把`MinGW`目录同`MSYS`目录合并也应该没问题的!
+
+
+当然必须安装的还有`groff`，这个可以从`MinGW`项目中去下载，可以源代码也可以是安装包！
+（建议用源代码，正好熟悉一下常用的安装过程，顺便测试一下看`shell`是不是正确执行！）
+
+    具体的安装过程见`groff`自带的`README`。
+
+然后到`MinGW/msys/1.0/bin`下创建`man`脚本，参照 [[http://www.mingw.org/wiki/ManScript|ManScript]]
+编写`man`脚本和`man.conf`跟安装不一致的地方自行修改！
+
+
+完了可以从[[http://kernel.org/doc/man-pages/|linux man]]处下载最新的man手册！
+
+    此处的手册包含了`2 3 4 5 7`不完全，我主要是使用此处的 `3. Library functions`。<br/>
+    对于常用的`linux`命令，可以从`linux`系统上复制`man1`文件夹到对应的`/usr/share/man`（如果是`gz`格式的需要解压）。
+
+=== 在`windows`命令行中使用`MSYS`和`man` ===
+----
+
+安装了`groff`以后在`windows`命令行中使用`man`也是很方便的！
+编写一个`bat`文件即可!（可以从最后的附件中找到！）将该文件放到系统路径中就可以执行！
+
+    如果你直接从[[http://www.mingw.org/wiki/ManScript|ManScript]]复制了其中的脚本，
+    则只能默认查找`man1`,且有可能在运行时
+    提示`WARNING: terminal is not fully functional`,需要设置`set TERM=msys`!(参考附件)
+
+同样在命令行中可以执行`sh`切换到`MSYS`，或者执行`sh -c "some command"`，将会很`cool`! 
+那样你可以写`Makefile`时用`shell`，执行`sh -c make`执行！可以同`Eclipse`等工具集成！
+
+同样在附件中也提供了一个`sh.cmd`(就是一个`bat`文件)，可以完成这个工作！
+
+    `sh.cm`中设置了`CURCMDPATH`变量，同最开始修改`/etc/profile`里的内容对应起来了！
+
+=== 与其他工具的集成 ===
+----
+
+因为在项目中使用了`git`而且我也已经安装了`msysgit`，这里就直接调用现有的`git.exe`。
+
+    很简单，写一个`shell`脚本即可！<br/>
+    可以将`msysgit`的`/etc/git-completion.bash`复制到`MSYS`的对应目录下，
+    在`/etc/profile`文件中加入`. /etc/git-completion.bash`，这样就可以使用`git`的自动完成了！ 
+
+== 附件 ==
+----
+
+<a href="../files/changed.zip">修改的文件</a>
+

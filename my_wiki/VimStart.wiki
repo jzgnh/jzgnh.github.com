@@ -1,0 +1,172 @@
+
+%title Vim 起步
+
+
+== Vim 基本安装配置 ==
+
+=== 安装 ===
+----
+    _Windows 上直接解压到固定目录就可以了_<br/>
+    _其他系统上参考对应系统的帮助_
+
+=== 基本操作 ===
+----
+
+    _基本上学会移动，插入，查抄，替换就可以，没几个按键很方便的。_<br/>
+    _可以参考：_ [[http://doc.linuxpk.com/doc/vim/|Vim中文帮助]]
+
+=== 基本配置 ===
+----
+_这里假定vim尚未进行任何配置来操作的。如果已经存在某些插件的话应该也不影响使用。_
+
+    _vim 的配置文件位置：_ <br/>
+    Unix 和 OS/2 位于： ~/.vimrc <br/>
+    Dos 和 Windows 位于: $VIM\_vimrc <br/>
+
+    _vim 的插件路径：_ <br/>
+    Unix 和 OS/2 位于： ~/.vim/ <br/>
+    Dos 和 Windows 位于: $VIM\vimfiles\ <br/>
+
+复制默认的配置文件到对应的位置。在Windows下位于 vim 文件夹下的 vimrc_example.vim 到上述的位置（ *注意* ：文件名不要带扩展名）。
+
+这里首先来一个简单的配置，方便使用。复制过来的默认配置应该类似如下:
+
+{{{class="brush: vim"
+" An example for a vimrc file.
+"
+" Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Last change:	2008 Dec 17
+"
+" To use it, copy it to
+"     for Unix and OS/2:  ~/.vimrc
+"	      for Amiga:  s:.vimrc
+"  for MS-DOS and Win32:  $VIM\_vimrc
+"	    for OpenVMS:  sys$login:.vimrc
+
+" When started as "evim", evim.vim will already have done these settings.
+if v:progname =~? "evim"
+  finish
+endif
+
+" Use Vim settings, rather than Vi settings (much better!).
+" This must be first, because it changes other options as a side effect.
+set nocompatible
+
+" allow backspacing over everything in insert mode
+set backspace=indent,eol,start
+
+if has("vms")
+  set nobackup		" do not keep a backup file, use versions instead
+else
+  set backup		" keep a backup file
+endif
+set history=50		" keep 50 lines of command line history
+set ruler		" show the cursor position all the time
+set showcmd		" display incomplete commands
+set incsearch		" do incremental searching
+
+" For Win32 GUI: remove 't' flag from 'guioptions': no tearoff menu entries
+" let &guioptions = substitute(&guioptions, "t", "", "g")
+
+" Don't use Ex mode, use Q for formatting
+map Q gq
+
+" CTRL-U in insert mode deletes a lot.  Use CTRL-G u to first break undo,
+" so that you can undo CTRL-U after inserting a line break.
+inoremap <C-U> <C-G>u<C-U>
+
+" In many terminal emulators the mouse works just fine, thus enable it.
+if has('mouse')
+  set mouse=a
+endif
+
+" Switch syntax highlighting on, when the terminal has colors
+" Also switch on highlighting the last used search pattern.
+if &t_Co > 2 || has("gui_running")
+  syntax on
+  set hlsearch
+endif
+
+" Only do this part when compiled with support for autocommands.
+if has("autocmd")
+
+  " Enable file type detection.
+  " Use the default filetype settings, so that mail gets 'tw' set to 72,
+  " 'cindent' is on in C files, etc.
+  " Also load indent files, to automatically do language-dependent indenting.
+  filetype plugin indent on
+
+  " Put these in an autocmd group, so that we can delete them easily.
+  augroup vimrcEx
+  au!
+
+  " For all text files set 'textwidth' to 78 characters.
+  autocmd FileType text setlocal textwidth=78
+
+  " When editing a file, always jump to the last known cursor position.
+  " Don't do it when the position is invalid or when inside an event handler
+  " (happens when dropping a file on gvim).
+  " Also don't do it when the mark is in the first line, that is the default
+  " position when opening a file.
+  autocmd BufReadPost *
+    \ if line("'\"") > 1 && line("'\"") <= line("$") |
+    \   exe "normal! g`\"" |
+    \ endif
+
+  augroup END
+
+else
+
+  set autoindent		" always set autoindenting on
+
+endif " has("autocmd")
+
+" Convenient command to see the difference between the current buffer and the
+" file it was loaded from, thus the changes you made.
+" Only define it when not defined already.
+if !exists(":DiffOrig")
+  command DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis
+		  \ | wincmd p | diffthis
+endif
+}}}
+
+这里需要修改一些小的设定。
+首先如果在写东西的时候不希望经常有一个 `~` 后缀名的备份文件，
+所以最先做的就是先把第 `24`到`28` 行
+{{{class="brush: vim; first-line: 24"
+if has("vms")
+  set nobackup		" do not keep a backup file, use versions instead
+else
+  set backup		" keep a backup file
+endif
+}}}
+只保留`25`行，即 `set nobackup` （不设置备份）。
+
+    *注意* : 后面描述的行号都是修改后的。
+
+各个插件基本上都需要 `filetype plugin on` ，
+所以在第`19`行`set nocompatible`后面加上这句话！（ *注意* ：不要把配置写到 `set nocompatible` 之前）。
+
+另外常加入下面的设置:
+{{{class="brush: vim; first-line: 95"
+set number!     " 显示行号
+set cursorline  " 高亮当前行
+set laststatus=2    " 总是显示状态栏
+
+if exists('+colorcolumn')
+  set colorcolumn=80    " 设置参考线
+endif
+
+set encoding=gbk  " 设置默认编码 Windows 下为gbk，*nix下一般为 utf-8
+" 检测编辑文件的字符编码,顺序原因详情问 Google
+set fileencodings=ucs-bom,utf-8,cp936,gb18030,eucjp,euckr,latin1
+set termencoding=gbk    " 控制台字符编码 *nix下为utf-8
+
+" 设置 {{{ }}} 代码折叠
+set foldmethod=marker
+}}}
+
+常用的设置基本就好了，至于配置文件中那些其他的设置请参考帮助，或者干脆别明白，哈哈！
+    *注意* : 看帮助的话使用 `help` 命令!
+
+

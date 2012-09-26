@@ -1,0 +1,16 @@
+
+%title Mark的WIKI
+
+<i style="display:none">
+[[diary/diary|日志]]  </i>
+
+ == Mark的WIKI ==
+    本WIKI专门用来记录点点滴滴！
+
+----
+
+*本WIKI有如下几个模块*
+    # [o] [[VimStart|Vim起步]]
+    # [O] [[VimWiki/|VimWikiVim环境]] 
+    # [ ] 插件等
+

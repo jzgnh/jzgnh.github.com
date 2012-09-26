@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html>
+<head>
+    <link rel="Stylesheet" type="text/css" href="%root_path%style.css" />
+    <title>%title%</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <script src="%root_path%scripts/shCore.js" type="text/javascript"></script>
+    <script src="%root_path%scripts/shAutoloader.js" type="text/javascript"></script>
+    <link href="%root_path%stylesheets/shCore.css" rel="stylesheet" type="text/css" />
+    <link href="%root_path%stylesheets/shThemeDefault.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div align="center" 
+            style="z-index:100; width:100%; top:5px; position:fixed;">
+        <code style="background-color:#e0e0e0">
+            <strong>
+            <a href="%root_path%index.html">回主页</a>
+            <a href="%root_path%diary/diary.html">我的日志</a>
+            </strong>
+        </code>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+    <div class="content">
+    %content%
+    </div>
+    
+<script type="text/javascript">
+function path()
+{
+  var args = arguments,
+      result = []
+      ;
+       
+  for(var i = 0; i < args.length; i++)
+      result.push(args[i].replace('@', '%root_path%scripts/'));
+       
+  return result
+};
+SyntaxHighlighter.autoloader.apply(null, path(
+  'applescript            @shBrushAppleScript.js',
+  'actionscript3 as3      @shBrushAS3.js',
+  'bash shell             @shBrushBash.js',
+  'cpp c                  @shBrushCpp.js',
+  'c# c-sharp csharp      @shBrushCSharp.js',
+  'css                    @shBrushCss.js',
+  'delphi pascal          @shBrushDelphi.js',
+  'diff patch pas         @shBrushDiff.js',
+  'java                   @shBrushJava.js',
+  'js jscript javascript  @shBrushJScript.js',
+  'perl pl                @shBrushPerl.js',
+  'php                    @shBrushPhp.js',
+  'text plain             @shBrushPlain.js',
+  'py python              @shBrushPython.js',
+  'ruby rails ror rb      @shBrushRuby.js',
+  'sql                    @shBrushSql.js',
+  'vb vbnet               @shBrushVb.js',
+  'vim vi                 @shBrushVim.js',
+  'xml xhtml xslt html    @shBrushXml.js'
+));
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
