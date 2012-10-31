@@ -1,0 +1,138 @@
+
+%title 配置MPD
+
+
+= 配置`MPD` =
+----
+
+`mpd mpc` 在`linux`下听音乐还是比较简单的。
+`xubuntu` 下直接 `sudo apt-get install mpd mpc` 即可完成安装。
+
+安装好了基本不太用配置。配置文件在 `/etc/mpd.conf`。
+
+    对于某些`mp3`文件信息可能有乱码，修改配置文件中的 `id3v1_encoding`，
+    为对应的编码（一般为 `GBK`）。
+
+== 播放`mms` ==
+----
+收听网络电台经常使用`mms`协议，可以直接添加，很方便！
+{{{class="brush: bash"
+# 当然要保证 mpd 已经启动
+# sudo /etc/init.d/mpd start
+mpc add mms://live.cri.cn/oldies
+mpc add mms://live.cri.cn/pop
+# 保存成播放列表
+mpc save cri
+
+# 将来可以重新加载改播放列表
+# mpc clear     # 清空当前列表
+# mpc load cri  # 加载 cri 播放列表
+
+# 后面可以用下面命令查看列表中的歌曲详情
+# mpc playlist 
+
+# 播放指定序号的曲目
+mpc play 1 
+}}}
+
+也可以写个简单的脚本直接开始或停止电台收听!
+{{{class="brush: bash"
+#! /bin/sh 
+
+# 不是播放状态就开始播放 怀旧金曲
+if [ -z "$(mpc | grep "\[playing\]")" ]; then
+  mpc play $(mpc playlist | cat -n - | grep oldies | sed "s/^\s*\([0-9]*\)\s*.*$/\1/")
+else
+  # 播放的话就停止
+  mpc stop
+fi
+}}}
+
+== 听歌曲 ==
+----
+
+默认配置的`mpd`音乐目录位于`/var/lib/mpd/music`。查找音乐时会从此处找。
+所以音乐需要复制到此目录下。
+
+    当然也可以直接做个符号链接到你的音乐目录也是可以的！
+
+{{{class="brush: bash"
+# 首先要更新音乐库
+mpc update --wait
+
+# 查看列表
+mpc ls
+# 输出类似如下
+# >mymusic
+# >....
+# >cri
+# cri 是上面电台的列表
+
+# 全部添加即可将所有音乐放到播放列表中
+mpc clear
+# 支持管道操作，可以一次完成，如下
+# mpc ls | mpc add
+
+# 仅添加固定目录
+mpc add mymusic
+
+# 可以重新保存一个播放列表
+# mpc save mymusic
+# 播放是加载
+# mpc load mymusic
+
+# 开启随机播放
+mpc random on
+mpc play
+
+# 可以暂停 和停止，上一首 下一首等
+# mpc pause
+# mpc stop
+# mpc prev
+# mpc next
+}}}
+
+切换歌曲时可以添加桌面通知。我通过轮询的方式获取信息，脚本如下:
+
+    WARN: 应该有更好的方式。
+
+{{{class="brush: bash"
+#! /bin/sh
+
+
+cursong=""
+
+# 无论如何都要先开始播放
+mpc random on
+mpc play >/dev/null
+
+# 防止重复运行，这个实现方式不好，很不好
+count="$(ps -ef | grep "$0" |grep -v grep | wc -l)"
+if [ "$count" -gt 2 ]; then
+    notify-send -t 5000 -i info "MPD running!" "$( mpc status | head -n 2)"
+    exit 1
+fi
+
+sleep 5
+
+while true
+do
+    if [ -z "$(mpc status | grep "\[.*\]")" ]; then
+        exit
+    fi
+    nowsong="$(mpc status | grep "\[.*\]" | sed "s/^.\+#\([^\/]\+\).*$/\1/")"
+
+    if [ "$cursong" != "$nowsong" ]; then
+        notify-send -t 5000 -i info "MPD $nowsong" "$( mpc status | head -n 2)"
+        cursong="$nowsong"
+    fi
+    sleep 5
+done
+}}}
+
+运行此脚本即可开始播放，并在切歌时显示桌面通知。等执行`mpc stop`后脚本自动退出。
+
+    WARN: 没有安装 `notify-send` 的请自行安装。
+
+    *实现方式不可取。凑合能用就算了，俺要求低！*
+
