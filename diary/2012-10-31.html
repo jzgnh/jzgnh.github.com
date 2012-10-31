@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html>
+<head>
+    <link rel="Stylesheet" type="text/css" href="../style.css" />
+    <title>配置MPD</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <script src="../scripts/shCore.js" type="text/javascript"></script>
+    <script src="../scripts/shAutoloader.js" type="text/javascript"></script>
+    <link href="../stylesheets/shCore.css" rel="stylesheet" type="text/css" />
+    <link href="../stylesheets/shThemeDefault.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div align="center" 
+            style="z-index:100; width:100%; top:5px; position:fixed;">
+        <code style="background-color:#e0e0e0">
+            <strong>
+            <a href="../index.html">回主页</a>
+            <a href="../diary/diary.html">我的日志</a>
+            <a href="mailto:jzg@cdgs.tk">联系我</a>
+            </strong>
+        </code>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+    <div class="content">
+    
+
+
+
+<h1 id="toc_1">配置<code>MPD</code></h1>
+<hr />
+
+<p>
+<code>mpd mpc</code> 在<code>linux</code>下听音乐还是比较简单的。
+<code>xubuntu</code> 下直接 <code>sudo apt-get install mpd mpc</code> 即可完成安装。
+</p>
+
+<p>
+安装好了基本不太用配置。配置文件在 <code>/etc/mpd.conf</code>。
+</p>
+<blockquote>
+对于某些<code>mp3</code>文件信息可能有乱码，修改配置文件中的 <code>id3v1_encoding</code>，
+为对应的编码（一般为 <code>GBK</code>）。
+</blockquote>
+
+<h2 id="toc_1.1">播放<code>mms</code></h2>
+<hr />
+<p>
+收听网络电台经常使用<code>mms</code>协议，可以直接添加，很方便！
+</p>
+<pre class="brush: bash">
+# 当然要保证 mpd 已经启动
+# sudo /etc/init.d/mpd start
+mpc add mms://live.cri.cn/oldies
+mpc add mms://live.cri.cn/pop
+# 保存成播放列表
+mpc save cri
+
+# 将来可以重新加载改播放列表
+# mpc clear     # 清空当前列表
+# mpc load cri  # 加载 cri 播放列表
+
+# 后面可以用下面命令查看列表中的歌曲详情
+# mpc playlist 
+
+# 播放指定序号的曲目
+mpc play 1 
+</pre>
+
+<p>
+也可以写个简单的脚本直接开始或停止电台收听!
+</p>
+<pre class="brush: bash">
+#! /bin/sh 
+
+# 不是播放状态就开始播放 怀旧金曲
+if [ -z "$(mpc | grep "\[playing\]")" ]; then
+  mpc play $(mpc playlist | cat -n - | grep oldies | sed "s/^\s*\([0-9]*\)\s*.*$/\1/")
+else
+  # 播放的话就停止
+  mpc stop
+fi
+</pre>
+
+<h2 id="toc_1.2">听歌曲</h2>
+<hr />
+
+<p>
+默认配置的<code>mpd</code>音乐目录位于<code>/var/lib/mpd/music</code>。查找音乐时会从此处找。
+所以音乐需要复制到此目录下。
+</p>
+<blockquote>
+当然也可以直接做个符号链接到你的音乐目录也是可以的！
+</blockquote>
+
+<pre class="brush: bash">
+# 首先要更新音乐库
+mpc update --wait
+
+# 查看列表
+mpc ls
+# 输出类似如下
+# &gt;mymusic
+# &gt;....
+# &gt;cri
+# cri 是上面电台的列表
+
+# 全部添加即可将所有音乐放到播放列表中
+mpc clear
+# 支持管道操作，可以一次完成，如下
+# mpc ls | mpc add
+
+# 仅添加固定目录
+mpc add mymusic
+
+# 可以重新保存一个播放列表
+# mpc save mymusic
+# 播放是加载
+# mpc load mymusic
+
+# 开启随机播放
+mpc random on
+mpc play
+
+# 可以暂停 和停止，上一首 下一首等
+# mpc pause
+# mpc stop
+# mpc prev
+# mpc next
+</pre>
+
+<p>
+切换歌曲时可以添加桌面通知。我通过轮询的方式获取信息，脚本如下:
+</p>
+<blockquote>
+WARN: 应该有更好的方式。
+</blockquote>
+
+<pre class="brush: bash">
+#! /bin/sh
+
+
+cursong=""
+
+# 无论如何都要先开始播放
+mpc random on
+mpc play &gt;/dev/null
+
+# 防止重复运行，这个实现方式不好，很不好
+count="$(ps -ef | grep "$0" |grep -v grep | wc -l)"
+if [ "$count" -gt 2 ]; then
+    notify-send -t 5000 -i info "MPD running!" "$( mpc status | head -n 2)"
+    exit 1
+fi
+
+sleep 5
+
+while true
+do
+    if [ -z "$(mpc status | grep "\[.*\]")" ]; then
+        exit
+    fi
+    nowsong="$(mpc status | grep "\[.*\]" | sed "s/^.\+#\([^\/]\+\).*$/\1/")"
+
+    if [ "$cursong" != "$nowsong" ]; then
+        notify-send -t 5000 -i info "MPD $nowsong" "$( mpc status | head -n 2)"
+        cursong="$nowsong"
+    fi
+    sleep 5
+done
+</pre>
+
+<p>
+运行此脚本即可开始播放，并在切歌时显示桌面通知。等执行<code>mpc stop</code>后脚本自动退出。
+</p>
+<blockquote>
+WARN: 没有安装 <code>notify-send</code> 的请自行安装。
+</blockquote>
+<blockquote>
+<strong>实现方式不可取。凑合能用就算了，俺要求低！</strong>
+</blockquote>
+
+    </div>
+    
+<script type="text/javascript">
+function path()
+{
+  var args = arguments,
+      result = []
+      ;
+       
+  for(var i = 0; i < args.length; i++)
+      result.push(args[i].replace('@', '../scripts/'));
+       
+  return result
+};
+SyntaxHighlighter.autoloader.apply(null, path(
+  'applescript            @shBrushAppleScript.js',
+  'actionscript3 as3      @shBrushAS3.js',
+  'bash shell             @shBrushBash.js',
+  'cpp c                  @shBrushCpp.js',
+  'c# c-sharp csharp      @shBrushCSharp.js',
+  'css                    @shBrushCss.js',
+  'delphi pascal          @shBrushDelphi.js',
+  'diff patch pas         @shBrushDiff.js',
+  'java                   @shBrushJava.js',
+  'js jscript javascript  @shBrushJScript.js',
+  'perl pl                @shBrushPerl.js',
+  'php                    @shBrushPhp.js',
+  'text plain             @shBrushPlain.js',
+  'py python              @shBrushPython.js',
+  'ruby rails ror rb      @shBrushRuby.js',
+  'sql                    @shBrushSql.js',
+  'vb vbnet               @shBrushVb.js',
+  'vim vi                 @shBrushVim.js',
+  'xml xhtml xslt html    @shBrushXml.js'
+));
+SyntaxHighlighter.all();
+</script>
+</body>
+</html>
