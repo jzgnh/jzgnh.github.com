@@ -172,12 +172,13 @@ set foldenable
 set foldlevel=30
 
 " tab-page
+" <Leader> 一般情况是 \ ，这里设置了几个 tab pages 使用的快捷键
 map <Leader>tn :tabnext<CR>
 map <Leader>tp :tabprev<CR>
 map <Leader>tc :tabclose<CR>
 map <Leader>te :tabedit
 
-" buffer
+" buffer 操作的几个快捷键
 map <Leader>bn :bnext<CR>
 map <Leader>bp :bprevious<CR>
 map <Leader>bd :bd<CR>
@@ -192,4 +193,5 @@ set termencoding=gbk    " 控制台字符编码 *nix下为utf-8
 常用的设置基本就好了，至于配置文件中那些其他的设置请参考帮助，或者干脆别明白，哈哈！
     *注意* : 看帮助的话使用 `help` 命令!
 
+基本的配置文件点<a href="files/base.vimrc">这里</a>下载，下载后放到上述的位置即可！
 
