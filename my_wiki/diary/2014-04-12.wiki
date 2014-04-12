@@ -1,0 +1,44 @@
+
+%title 硬盘安装Ubuntu操作步骤
+
+== 在Win7下硬盘安装Ubuntu的ISO镜像 ==
+
+方法来自[[http://www.nenew.net/ubuntu-12-04-hard-disk-install-tutorial.html|奶牛博客]].
+
+
+    `Win7` 下可以使用 `Grub4Dos` 或者 `Neo Grub` (包含在 `Easy BCD` 中).
+
+1. 配置Grub：
+
+    {{{class="brush: plain"
+    title XUbuntu install
+    root (hd0,0)
+    kernel /vmlinuz boot=casper iso-scan/filename=/linux.iso ro quiet splash
+    initrd /initrd.lz
+    boot
+    }}}
+
+    注意磁盘分区的位置，我的是 `hd(0,1)`
+
+2. 复制相关文件
+
+    * 将要安装的`Ubuntu`(各种版本，我使用的是 `XUbuntu`)镜像文件复制到`C:`根目录下，
+    如: `xubuntu-13.10-desktop-amd64.iso` 复制到 `C:\linux.iso`;
+    * 从此镜像文件中的`casper`文件夹中解压出`vmlinuz`及`initrd.lz`同样放到`C:`根目录下。
+
+3. 此时重新启动即可看到引导菜单中多了一个 `XUbuntu install` 的启动项，
+启动该项目即可进入到 `Live CD` 的桌面下了，此时打开终端执行如下指令:
+
+    {{{class="brush: bash"
+    sudo umount -l /isodevice
+    }}}
+
+4. 此时就可以使用桌面的安装程序进行安装操作了。
+
+    安装完成后如果`Windows`菜单项不见了，在`linux`下执行`sudo update-grub`指令即可。
+
+
+== 在Linux下Grub启动Ubuntu的ISO镜像 ==
+
+未测试，留网址吧 [[http://askubuntu.com/questions/340156/install-ubuntu-from-iso-image-directly-from-hard-disk-of-a-system-running-linux|直接从Grub中启动Ubuntu的ISO镜像]]
+
