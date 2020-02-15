@@ -2,7 +2,7 @@
 %title 配置MPD
 
 
-= 配置`MPD` =
+= 配置MPD =
 ----
 
 `mpd mpc` 在`linux`下听音乐还是比较简单的。

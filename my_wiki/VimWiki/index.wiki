@@ -51,3 +51,4 @@ let g:vimwiki_html_header_numbering = 0
 当然可以有更多的配置，可以做一下模板文件等。
 
 对于写日志来说还可以跟 [[http://www.vim.org/scripts/script.php?script_id=52|Calendar]]集成更强大。
+

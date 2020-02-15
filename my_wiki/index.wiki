@@ -1,6 +1,7 @@
 
 %title Mark的WIKI
 
+
 <i style="display:none">
 [[diary/diary|日志]]  </i>
 
